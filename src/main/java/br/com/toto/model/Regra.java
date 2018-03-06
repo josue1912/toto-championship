@@ -6,21 +6,22 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 @Entity
-public class Time {
+public class Regra {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
-	
-	private String nome;
+
+	private String descricao;
 	
 	@Deprecated
-	public Time() {}
-	
-	public Time(String time) {
-		this.nome = time;
+	public Regra() {
 	}
-
+	
+	public Regra(String descricao) {
+		this.descricao = descricao;
+	}
+	
 	public Integer getId() {
 		return id;
 	}
@@ -29,12 +30,12 @@ public class Time {
 		this.id = id;
 	}
 
-	public String getNome() {
-		return nome;
+	public String getDescricao() {
+		return descricao;
 	}
 
-	public void setNome(String nome) {
-		this.nome = nome;
+	public void setDescricao(String descricao) {
+		this.descricao = descricao;
 	}
 
 }

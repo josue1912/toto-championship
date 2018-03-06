@@ -4,6 +4,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import br.com.toto.model.Campeonato;
 
-public interface Campeonatos extends JpaRepository<Campeonato, Long> {
+public interface CampeonatoRepository extends JpaRepository<Campeonato, Integer> {
 
 }
