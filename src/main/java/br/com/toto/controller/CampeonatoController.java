@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -79,10 +80,10 @@ public class CampeonatoController {
 		return new ResponseEntity<Erro>(erro, HttpStatus.NOT_FOUND);
 	}
 	
-	@PostMapping(value="/{id}/jogador")
-	public ResponseEntity<?> inscreverJogadorNoCampeonato(@PathVariable("id") Integer id, @RequestBody(required=true) Jogador jogador){
+	@PostMapping(value="/{idCampeonato}/jogador")
+	public ResponseEntity<?> inscreverJogadorNoCampeonato(@PathVariable("idCampeonato") Integer idCampeonato, @RequestBody(required=true) Jogador jogador){
 		logger.info("Inscrevendo jogador no campeonato...");
-		Optional<Campeonato> campeonatoOptional = repositorio.findById(id);
+		Optional<Campeonato> campeonatoOptional = repositorio.findById(idCampeonato);
 		Campeonato campeonato;
 		if (campeonatoOptional.isPresent()) {
 			campeonato = campeonatoOptional.get();
@@ -98,10 +99,31 @@ public class CampeonatoController {
 			}
 			repositorio.save(campeonato);
 		}else {
-			Erro erro = new Erro("Campeonato com id: "+id+" não encontrado");
+			Erro erro = new Erro("Campeonato com id: "+idCampeonato+" não encontrado");
 			logger.info(erro.getMensagem());
 			return new ResponseEntity<Erro>(erro, HttpStatus.NOT_FOUND);
 		}
 		return new ResponseEntity<Campeonato>(campeonato, HttpStatus.CREATED);
+	}
+	
+	@PutMapping(value="/{idCampeonato}/jogador/{idJogador}")
+	public ResponseEntity<?> removerJogadorDoCampeonato(@PathVariable("idCampeonato") Integer idCampeonato, @PathVariable("idJogador") Integer idJogador){
+		Optional<Campeonato> campeonatoOptional = repositorio.findById(idCampeonato);
+		if (campeonatoOptional.isPresent()) {
+			Optional<Jogador> jogadorOptional = repositorioJogador.findById(idJogador);
+			if (jogadorOptional.isPresent()) {
+				Campeonato campeonato = campeonatoOptional.get();
+				campeonato.getJogadores().remove(jogadorOptional.get());
+				repositorio.save(campeonato);
+				return new ResponseEntity<Campeonato>(campeonato, HttpStatus.OK); 
+			}else {
+				Erro erro = new Erro("Jogador com id: "+idJogador+" não encontrado");
+				logger.info(erro.getMensagem());
+				return new ResponseEntity<Erro>(erro, HttpStatus.NOT_FOUND);
+			}			
+		}
+		Erro erro = new Erro("Campeonato com id: "+idCampeonato+" não encontrado");
+		logger.info(erro.getMensagem());
+		return new ResponseEntity<Erro>(erro, HttpStatus.NOT_FOUND);
 	}
 }
