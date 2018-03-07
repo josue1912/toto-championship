@@ -5,6 +5,7 @@ import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -44,7 +45,7 @@ public class Campeonato {
 	@OneToMany
 	private Set<Regra> regras;
 
-	@Enumerated
+	@Enumerated(EnumType.STRING)
 	@NotNull
 	private StatusCampeonato status;
 
