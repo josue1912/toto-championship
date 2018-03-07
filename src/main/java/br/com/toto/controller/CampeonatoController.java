@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import br.com.toto.dto.Erro;
 import br.com.toto.model.Campeonato;
 import br.com.toto.model.Jogador;
 import br.com.toto.repository.CampeonatoRepository;
@@ -24,7 +25,7 @@ import br.com.toto.repository.JogadorRepository;
 import br.com.toto.utils.StatusCampeonato;
 
 @RestController
-@RequestMapping("/campeonatos")
+@RequestMapping("/campeonato")
 public class CampeonatoController {
 
 	@Autowired
@@ -38,6 +39,12 @@ public class CampeonatoController {
 	@PostMapping
 	public ResponseEntity<?> criarCampeonato(@RequestBody Campeonato campeonato, UriComponentsBuilder ucBuilder ){
 		logger.info("Cadastrando campeonato...");
+		Optional<Campeonato> campeonatoOptional = repositorio.findByNome(campeonato.getNome());
+		if (campeonatoOptional.isPresent()) {
+			Erro erro = new Erro("Já existe um campeonato com este nome");
+			logger.info(erro.getMensagem());
+			return new ResponseEntity<Erro>(erro, HttpStatus.CONFLICT);
+		}
 		campeonato.setStatus(StatusCampeonato.EM_CRIACAO);
 		Campeonato campeonatoSalvo = repositorio.save(campeonato);
 		HttpHeaders headers = new HttpHeaders();
@@ -54,8 +61,9 @@ public class CampeonatoController {
 			logger.info("{} campeonatos encontrados!",campeonatos.size());
 			return new ResponseEntity<List<Campeonato>>(campeonatos, HttpStatus.OK);
 		}
-		logger.info("Nenhum campeonato encontrado!");
-		return new ResponseEntity<>(HttpStatus.NOT_FOUND); 
+		Erro erro = new Erro("Nenhum campeonato encontrado");
+		logger.info(erro.getMensagem());
+		return new ResponseEntity<Erro>(erro, HttpStatus.NOT_FOUND); 
 	}
 	
 	@GetMapping(value="/{id}")
@@ -66,8 +74,9 @@ public class CampeonatoController {
 			logger.info("Campeonato com id {} encontrado", id);
 			return new ResponseEntity<Campeonato>(campeonato.get(), HttpStatus.OK);	
 		}
-		logger.info("Campeonato com id {} não encontrado", id);
-		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		Erro erro = new Erro("Campeonato com id: "+id+" não encontrado");
+		logger.info(erro.getMensagem());
+		return new ResponseEntity<Erro>(erro, HttpStatus.NOT_FOUND);
 	}
 	
 	@PostMapping(value="/{id}/jogador")
@@ -79,16 +88,19 @@ public class CampeonatoController {
 			campeonato = campeonatoOptional.get();
 			Optional<Jogador> jogadorOptional = repositorioJogador.findByEmail(jogador.getEmail());
 			Jogador novoJogador;
-			if (!jogadorOptional.isPresent()) {
+			if (jogadorOptional.isPresent()) {
+				campeonato.getJogadores().add(jogadorOptional.get());
+				logger.info("O jogador [{}] já existia e foi inscrito no campeonato [{}]", jogador.getNome(), campeonato.getNome());
+			}else {
 				novoJogador = repositorioJogador.save(jogador);
 				campeonato.getJogadores().add(novoJogador);
-				logger.info("O jogador [{}] foi cadastrado no campeonato [{}]", jogador.getNome(), campeonato.getNome());
-			}else {
-				campeonato.getJogadores().add(jogadorOptional.get());
+				logger.info("O jogador [{}] foi inscrito no campeonato [{}]", jogador.getNome(), campeonato.getNome());
 			}
 			repositorio.save(campeonato);
 		}else {
-			return new ResponseEntity<>("Campeonato com id ["+id+"] nao foi encontrado", HttpStatus.NOT_FOUND);
+			Erro erro = new Erro("Campeonato com id: "+id+" não encontrado");
+			logger.info(erro.getMensagem());
+			return new ResponseEntity<Erro>(erro, HttpStatus.NOT_FOUND);
 		}
 		return new ResponseEntity<Campeonato>(campeonato, HttpStatus.CREATED);
 	}
