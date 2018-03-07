@@ -86,6 +86,7 @@ public class CampeonatoController {
 			}else {
 				campeonato.getJogadores().add(jogadorOptional.get());
 			}
+			repositorio.save(campeonato);
 		}else {
 			return new ResponseEntity<>("Campeonato com id ["+id+"] nao foi encontrado", HttpStatus.NOT_FOUND);
 		}
