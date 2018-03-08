@@ -30,7 +30,7 @@ public class JogadorController {
 	public static final Logger logger = LoggerFactory.getLogger(JogadorController.class);
 	
 	@PostMapping
-	public ResponseEntity<?> cadastrarJogador(@RequestBody Jogador jogador, UriComponentsBuilder builder){
+	public ResponseEntity<?> criarJogador(@RequestBody Jogador jogador, UriComponentsBuilder builder){
 		logger.info("Cadastrando jogador...");
 		Optional<Jogador> jogadorOptional = repositorio.findByEmail(jogador.getEmail());
 		if (jogadorOptional.isPresent()) {

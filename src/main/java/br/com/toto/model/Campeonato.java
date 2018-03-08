@@ -10,7 +10,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
+import javax.persistence.ManyToMany;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
@@ -39,16 +39,16 @@ public class Campeonato {
 	@NotNull(message = "A data do campeonato deve ser informada")
 	private Calendar dataRealizacao;
 	
-	@OneToMany
+	@ManyToMany
 	private Set<Jogador> jogadores;
 
-	@OneToMany
+	@ManyToMany
 	private Set<Regra> regras;
 
 	@Enumerated(EnumType.STRING)
 	@NotNull
 	private StatusCampeonato status;
-
+	
 	@Deprecated
 	public Campeonato() {
 	}

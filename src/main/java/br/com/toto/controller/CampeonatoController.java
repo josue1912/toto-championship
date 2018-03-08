@@ -19,10 +19,13 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import br.com.toto.dto.Erro;
+import br.com.toto.exception.JogadoresInsuficientesException;
+import br.com.toto.exception.NumeroDeJogadoresImparException;
 import br.com.toto.model.Campeonato;
 import br.com.toto.model.Jogador;
 import br.com.toto.repository.CampeonatoRepository;
 import br.com.toto.repository.JogadorRepository;
+import br.com.toto.utils.BrasilTimesSerieA2018Enum;
 import br.com.toto.utils.StatusCampeonato;
 
 @RestController
@@ -126,4 +129,51 @@ public class CampeonatoController {
 		logger.info(erro.getMensagem());
 		return new ResponseEntity<Erro>(erro, HttpStatus.NOT_FOUND);
 	}
+	
+	@GetMapping(value="/{idCampeonato}/sortear")
+	private ResponseEntity<?> sortearTimes(@PathVariable("idCampeonato") Integer idCampeonato) {
+		Optional<Campeonato> campeonatoOptional = repositorio.findById(idCampeonato);
+		Campeonato campeonato;
+		
+		if (campeonatoOptional.isPresent()) {
+			campeonato = campeonatoOptional.get();
+		}else {
+			Erro erro = new Erro("Campeonato com id: "+idCampeonato+" não encontrado");
+			logger.info(erro.getMensagem());
+			return new ResponseEntity<Erro>(erro, HttpStatus.NOT_FOUND);
+		}
+		
+		Integer qtdJogadores = campeonato.getJogadores().size();
+		if (qtdJogadores < 4) {
+			Erro erro = new Erro("Ao menos 4 jogadores devem ser inscritos para sortear os times");
+			logger.info(erro.getMensagem());
+			return new ResponseEntity<Erro>(erro, HttpStatus.BAD_REQUEST);
+		}
+		if (qtdJogadores > 40) {
+			Erro erro = new Erro("Existem "+qtdJogadores+" jogadores inscritos no campeonato. Para sortear os times, o campeonato comporta no máximo 40 jogadores");
+			logger.info(erro.getMensagem());
+			return new ResponseEntity<Erro>(erro, HttpStatus.BAD_REQUEST);
+		}
+		if (qtdJogadores % 2 != 0) {
+			Erro erro = new Erro("Existem "+qtdJogadores+" jogadores inscritos no campeonato. Para sortear os times, o número de jogadores inscritos deve ser par");
+			logger.info(erro.getMensagem());
+			return new ResponseEntity<Erro>(erro, HttpStatus.BAD_REQUEST);
+		}
+		
+		
+		BrasilTimesSerieA2018Enum[] qtdTimesEnum = BrasilTimesSerieA2018Enum.values();
+		logger.info("Quantidade de times: "+qtdTimesEnum.length);
+		
+		
+		// sorteia time
+		// escolhe 2 jogadores para o time
+		
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+	
+	private Integer sorteiaNumero(Integer min, Integer max) {
+		Integer n = (max + 1 - min) + min;
+		return (int) (Math.random() * n);
+	}
+	
 }

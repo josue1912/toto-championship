@@ -1,9 +1,12 @@
 package br.com.toto.model;
 
+import java.util.List;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 
 @Entity
 public class Time {
@@ -14,11 +17,22 @@ public class Time {
 	
 	private String nome;
 	
+	@ManyToMany
+	private List<Jogador> jogadores;
+	
 	@Deprecated
 	public Time() {}
 	
 	public Time(String time) {
 		this.nome = time;
+	}
+	
+	public List<Jogador> getJogadores() {
+		return jogadores;
+	}
+
+	public void setJogadores(List<Jogador> jogadores) {
+		this.jogadores = jogadores;
 	}
 
 	public Integer getId() {
