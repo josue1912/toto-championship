@@ -1,39 +1,33 @@
 package br.com.toto.model;
 
-import javax.persistence.Column;
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.ManyToOne;
+import javax.persistence.ManyToMany;
 
 @Entity
-public class Time {
+public class Equipe {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Integer id;
 
-	@Column(unique = true)
 	private String nome;
 
-	@ManyToOne
-	private Pais pais;
+	@ManyToMany
+	private Set<Jogador> jogadores;
 
 	@Deprecated
-	public Time() {
+	public Equipe() {
 	}
 
-	public Time(String time) {
-		this.nome = time;
-	}
-
-	public Pais getPais() {
-		return pais;
-	}
-
-	public void setPais(Pais pais) {
-		this.pais = pais;
+	public Equipe(String nome) {
+		this.nome = nome;
+		this.jogadores = new HashSet<>();
 	}
 
 	public Integer getId() {
@@ -50,6 +44,14 @@ public class Time {
 
 	public void setNome(String nome) {
 		this.nome = nome;
+	}
+
+	public Set<Jogador> getJogadores() {
+		return jogadores;
+	}
+
+	public void setJogadores(Set<Jogador> jogadores) {
+		this.jogadores = jogadores;
 	}
 
 }

@@ -1,6 +1,7 @@
 package br.com.toto.model;
 
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -29,16 +30,16 @@ public class Campeonato {
 	private Integer id;
 
 	@NotNull(message = "O nome do campeonato deve ser informado")
-	@Column(unique=true)
+	@Column(unique = true)
 	private String nome;
 
 	@Temporal(TemporalType.DATE)
-	@DateTimeFormat(pattern="dd-MM-yyyy")
+	@DateTimeFormat(pattern = "dd-MM-yyyy")
 	@JsonFormat(pattern = "dd-MM-yyyy")
-	@Column(name="data_realizacao")
+	@Column(name = "data_realizacao")
 	@NotNull(message = "A data do campeonato deve ser informada")
 	private Calendar dataRealizacao;
-	
+
 	@ManyToMany
 	private Set<Jogador> jogadores;
 
@@ -48,7 +49,10 @@ public class Campeonato {
 	@Enumerated(EnumType.STRING)
 	@NotNull
 	private StatusCampeonato status;
-	
+
+	@ManyToMany
+	private Set<Equipe> equipes;
+
 	@Deprecated
 	public Campeonato() {
 	}
@@ -56,6 +60,15 @@ public class Campeonato {
 	public Campeonato(String nome, Calendar dataRealizacao) {
 		this.nome = nome;
 		this.dataRealizacao = dataRealizacao;
+		this.equipes = new HashSet<>();
+	}
+
+	public Set<Equipe> getEquipes() {
+		return equipes;
+	}
+
+	public void setEquipes(Set<Equipe> equipes) {
+		this.equipes = equipes;
 	}
 
 	public StatusCampeonato getStatus() {
@@ -109,6 +122,5 @@ public class Campeonato {
 	public void setJogadores(Set<Jogador> jogadores) {
 		this.jogadores = jogadores;
 	}
-
 
 }

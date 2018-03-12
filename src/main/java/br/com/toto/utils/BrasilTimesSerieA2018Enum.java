@@ -32,4 +32,9 @@ public enum BrasilTimesSerieA2018Enum {
 	public String getNome() {
 		return nome;
 	}
+	
+	@Override
+	public String toString() {
+		return nome;
+	}
 }

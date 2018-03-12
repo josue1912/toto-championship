@@ -4,6 +4,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import br.com.toto.model.Time;
 
-public interface Times extends JpaRepository<Time, Integer>{
+public interface TimeRepository extends JpaRepository<Time, Integer>{
 
 }
