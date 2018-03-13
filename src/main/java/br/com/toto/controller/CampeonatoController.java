@@ -23,6 +23,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import br.com.toto.dto.Erro;
 import br.com.toto.model.Campeonato;
+import br.com.toto.model.Equipe;
 import br.com.toto.model.Jogador;
 import br.com.toto.model.Time;
 import br.com.toto.repository.CampeonatoRepository;
@@ -40,10 +41,10 @@ public class CampeonatoController {
 
 	@Autowired
 	private JogadorRepository repositorioJogador;
-	
+
 	@Autowired
 	private TimeRepository repositorioTime;
-	
+
 	@Autowired
 	private EquipeRepository repositorioEquipe;
 
@@ -155,6 +156,12 @@ public class CampeonatoController {
 			return new ResponseEntity<Erro>(erro, HttpStatus.NOT_FOUND);
 		}
 
+		if (campeonato.getStatus() != StatusCampeonato.EM_CRIACAO) {
+			Erro erro = new Erro("O campeonato não pode mais ser alterado");
+			logger.info(erro.getMensagem());
+			return new ResponseEntity<Erro>(erro, HttpStatus.BAD_REQUEST);
+		}
+
 		Integer qtdJogadores = campeonato.getJogadores().size();
 		if (qtdJogadores < 4 || qtdJogadores > 40) {
 			Erro erro = new Erro("Existem " + qtdJogadores
@@ -169,70 +176,43 @@ public class CampeonatoController {
 			return new ResponseEntity<Erro>(erro, HttpStatus.BAD_REQUEST);
 		}
 
-		Integer qtdTimesDoCampeonato = qtdJogadores / 2;
-		logger.info("Quantidade de times: " + qtdTimesDoCampeonato);
-
-		for (int i = 0; i < qtdTimesDoCampeonato; i++) {
-			// sorteia time
-			campeonato.setTimes(sortearTime());
-			
-			
-
-			// sorteia 2 jogadores para o time
-			time.getJogadores().add(sortearJogador(campeonato));
-			time.getJogadores().add(sortearJogador(campeonato));
-
-			repositorioTime.save(time);
-			
-			// adiciona time na lista
-			timesDoCampeonato.add(time);
-		}
-		
-		
-		campeonato.setTimes(timesDoCampeonato);
+		montarEquipes(campeonato);
 		repositorio.save(campeonato);
-
 		return new ResponseEntity<>(campeonato, HttpStatus.OK);
 	}
 
+	private void montarEquipes(Campeonato campeonato) {
+		Set<Time> times = sortearTimes(campeonato);
+		Equipe equipe;
+		for (Time time : times) {
+			equipe = new Equipe(time.getNome());
+			Set<Jogador> jogadores = new HashSet<>();
+			jogadores.add(sortearJogador(campeonato));
+			jogadores.add(sortearJogador(campeonato));
+			equipe.setJogadores(jogadores);
+			repositorioEquipe.save(equipe);
+			campeonato.getEquipes().add(equipe);
+		}
+		campeonato.setStatus(StatusCampeonato.CONFIGURADO);
+	}
+
 	private Jogador sortearJogador(Campeonato campeonato) {
-		Object[] jogadoresArray = campeonato.getJogadores().toArray();
-		Integer jogadorSorteado = sortearNumero(0, jogadoresArray.length-1);
-		Jogador jogador = (Jogador) jogadoresArray[jogadorSorteado];
+		Integer jogadorSorteado = new Random().nextInt(campeonato.getJogadores().size());
+		Jogador jogador = (Jogador) campeonato.getJogadores().toArray()[jogadorSorteado];
+		campeonato.getJogadores().remove(jogador);
 		return jogador;
 	}
-	
-	private void montarEquipes(Campeonato campeonato){
 
-		
-	
-	}
-	
 	private Set<Time> sortearTimes(Campeonato campeonato) {
 		List<Time> timesList = repositorioTime.findAll();
 		Set<Time> timesSet = new HashSet<>();
-		Integer qtdTimes = campeonato.getJogadores().size() /2;
+		Integer qtdTimes = campeonato.getJogadores().size() / 2;
 		while (timesSet.size() != qtdTimes) {
 			Time time = timesList.get(new Random().nextInt(timesList.size()));
 			logger.info("Time sorteado: {}", time.getNome());
 			timesSet.add(time);
 		}
 		return timesSet;
-	}
-	
-//	private Time sortearTime() {
-//		BrasilTimesSerieA2018Enum[] timesArray = BrasilTimesSerieA2018Enum.values();
-//		Integer timeSorteado = sortearNumero(0, timesArray.length-1);
-//		return new Time(timesArray[timeSorteado].toString());
-//	}
-
-	private Integer sortearNumero(Integer min, Integer max) {
-		Integer n = (max + 1 - min) + min;
-		int sorteado = (int) (Math.random() * n);
-		if (sorteado > max) {
-			return max;
-		}
-		return sorteado;
 	}
 
 }
