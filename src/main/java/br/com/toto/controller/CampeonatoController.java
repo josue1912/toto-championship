@@ -57,14 +57,14 @@ public class CampeonatoController {
 		if (campeonatoOptional.isPresent()) {
 			Erro erro = new Erro("Já existe um campeonato com este nome");
 			logger.info(erro.getMensagem());
-			return new ResponseEntity<Erro>(erro, HttpStatus.CONFLICT);
+			return new ResponseEntity<>(erro, HttpStatus.CONFLICT);
 		}
 		campeonato.setStatus(StatusCampeonato.EM_CRIACAO);
 		Campeonato campeonatoSalvo = repositorio.save(campeonato);
 		HttpHeaders headers = new HttpHeaders();
 		headers.setLocation(ucBuilder.path("/campeonatos/{id}").buildAndExpand(campeonatoSalvo.getId()).toUri());
 		logger.info("Campeonato cadastrado com sucesso!");
-		return new ResponseEntity<Campeonato>(campeonatoSalvo, headers, HttpStatus.CREATED);
+		return new ResponseEntity<>(campeonatoSalvo, headers, HttpStatus.CREATED);
 	}
 
 	@GetMapping
@@ -73,11 +73,11 @@ public class CampeonatoController {
 		List<Campeonato> campeonatos = repositorio.findAll();
 		if (campeonatos.size() > 0) {
 			logger.info("{} campeonatos encontrados!", campeonatos.size());
-			return new ResponseEntity<List<Campeonato>>(campeonatos, HttpStatus.OK);
+			return new ResponseEntity<>(campeonatos, HttpStatus.OK);
 		}
 		Erro erro = new Erro("Nenhum campeonato encontrado");
 		logger.info(erro.getMensagem());
-		return new ResponseEntity<Erro>(erro, HttpStatus.NOT_FOUND);
+		return new ResponseEntity<>(erro, HttpStatus.NOT_FOUND);
 	}
 
 	@GetMapping(value = "/{id}")
@@ -86,11 +86,11 @@ public class CampeonatoController {
 		Optional<Campeonato> campeonato = repositorio.findById(id);
 		if (campeonato.isPresent()) {
 			logger.info("Campeonato com id {} encontrado", id);
-			return new ResponseEntity<Campeonato>(campeonato.get(), HttpStatus.OK);
+			return new ResponseEntity<>(campeonato.get(), HttpStatus.OK);
 		}
 		Erro erro = new Erro("Campeonato com id: " + id + " não encontrado");
 		logger.info(erro.getMensagem());
-		return new ResponseEntity<Erro>(erro, HttpStatus.NOT_FOUND);
+		return new ResponseEntity<>(erro, HttpStatus.NOT_FOUND);
 	}
 
 	@PostMapping(value = "/{idCampeonato}/jogador")
@@ -117,9 +117,9 @@ public class CampeonatoController {
 		} else {
 			Erro erro = new Erro("Campeonato com id: " + idCampeonato + " não encontrado");
 			logger.info(erro.getMensagem());
-			return new ResponseEntity<Erro>(erro, HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>(erro, HttpStatus.NOT_FOUND);
 		}
-		return new ResponseEntity<Campeonato>(campeonato, HttpStatus.CREATED);
+		return new ResponseEntity<>(campeonato, HttpStatus.CREATED);
 	}
 
 	@PutMapping(value = "/{idCampeonato}/jogador/{idJogador}")
@@ -132,16 +132,16 @@ public class CampeonatoController {
 				Campeonato campeonato = campeonatoOptional.get();
 				campeonato.getJogadores().remove(jogadorOptional.get());
 				repositorio.save(campeonato);
-				return new ResponseEntity<Campeonato>(campeonato, HttpStatus.OK);
+				return new ResponseEntity<>(campeonato, HttpStatus.OK);
 			} else {
 				Erro erro = new Erro("Jogador com id: " + idJogador + " não encontrado");
 				logger.info(erro.getMensagem());
-				return new ResponseEntity<Erro>(erro, HttpStatus.NOT_FOUND);
+				return new ResponseEntity<>(erro, HttpStatus.NOT_FOUND);
 			}
 		}
 		Erro erro = new Erro("Campeonato com id: " + idCampeonato + " não encontrado");
 		logger.info(erro.getMensagem());
-		return new ResponseEntity<Erro>(erro, HttpStatus.NOT_FOUND);
+		return new ResponseEntity<>(erro, HttpStatus.NOT_FOUND);
 	}
 
 	@GetMapping(value = "/{idCampeonato}/gerarCampeonato")
@@ -154,13 +154,13 @@ public class CampeonatoController {
 		} else {
 			Erro erro = new Erro("Campeonato com id: " + idCampeonato + " não encontrado");
 			logger.info(erro.getMensagem());
-			return new ResponseEntity<Erro>(erro, HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>(erro, HttpStatus.NOT_FOUND);
 		}
 
 		if (campeonato.getStatus() != StatusCampeonato.EM_CRIACAO) {
 			Erro erro = new Erro("O campeonato não pode mais ser alterado");
 			logger.info(erro.getMensagem());
-			return new ResponseEntity<Erro>(erro, HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>(erro, HttpStatus.BAD_REQUEST);
 		}
 
 		Integer qtdJogadores = campeonato.getJogadores().size();
@@ -168,13 +168,13 @@ public class CampeonatoController {
 			Erro erro = new Erro("Existem " + qtdJogadores
 					+ " jogadores inscritos no campeonato. Para sortear os times, o campeonato deve ter entre 4 e 40 jogadores");
 			logger.info(erro.getMensagem());
-			return new ResponseEntity<Erro>(erro, HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>(erro, HttpStatus.BAD_REQUEST);
 		}
 		if (qtdJogadores % 2 != 0) {
 			Erro erro = new Erro("Existem " + qtdJogadores
 					+ " jogadores inscritos no campeonato. Para sortear os times, o número de jogadores inscritos deve ser par");
 			logger.info(erro.getMensagem());
-			return new ResponseEntity<Erro>(erro, HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>(erro, HttpStatus.BAD_REQUEST);
 		}
 
 		montarEquipes(campeonato);
