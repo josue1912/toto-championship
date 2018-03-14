@@ -112,6 +112,7 @@ public class CampeonatoController {
 				campeonato.getJogadores().add(novoJogador);
 				logger.info("O jogador [{}] foi inscrito no campeonato [{}]", jogador.getNome(), campeonato.getNome());
 			}
+			campeonato.setStatus(StatusCampeonato.EM_CRIACAO);
 			repositorio.save(campeonato);
 		} else {
 			Erro erro = new Erro("Campeonato com id: " + idCampeonato + " não encontrado");
@@ -163,7 +164,7 @@ public class CampeonatoController {
 		}
 
 		Integer qtdJogadores = campeonato.getJogadores().size();
-		if (qtdJogadores < 4 || qtdJogadores > 40) {
+		if ((qtdJogadores < 4 || qtdJogadores > 40) && campeonato.getEquipes().size() < 1) {
 			Erro erro = new Erro("Existem " + qtdJogadores
 					+ " jogadores inscritos no campeonato. Para sortear os times, o campeonato deve ter entre 4 e 40 jogadores");
 			logger.info(erro.getMensagem());
