@@ -25,10 +25,12 @@ import br.com.toto.dto.Erro;
 import br.com.toto.model.Campeonato;
 import br.com.toto.model.Equipe;
 import br.com.toto.model.Jogador;
+import br.com.toto.model.Partida;
 import br.com.toto.model.Time;
 import br.com.toto.repository.CampeonatoRepository;
 import br.com.toto.repository.EquipeRepository;
 import br.com.toto.repository.JogadorRepository;
+import br.com.toto.repository.PartidaRepository;
 import br.com.toto.repository.TimeRepository;
 import br.com.toto.utils.StatusCampeonato;
 
@@ -47,6 +49,9 @@ public class CampeonatoController {
 
 	@Autowired
 	private EquipeRepository repositorioEquipe;
+
+	@Autowired
+	private PartidaRepository repositorioPartida;
 
 	public static final Logger logger = LoggerFactory.getLogger(CampeonatoController.class);
 
@@ -178,6 +183,7 @@ public class CampeonatoController {
 		}
 
 		montarEquipes(campeonato);
+		montarTabelaDePartidas(campeonato);
 		repositorio.save(campeonato);
 		return new ResponseEntity<>(campeonato, HttpStatus.OK);
 	}
@@ -216,4 +222,18 @@ public class CampeonatoController {
 		return timesSet;
 	}
 
+	private void montarTabelaDePartidas(Campeonato campeonato){
+		Object[] equipes = campeonato.getEquipes().toArray();
+
+		for (int i=0; i<equipes.length; i++){
+			Equipe timeA = (Equipe) equipes[i];
+			for (int j=i+1; j<equipes.length; j++){
+				Equipe timeB = (Equipe) equipes[j];
+				Partida partida = new Partida(timeA, timeB);
+				logger.info("Partida: {} x {}",timeA.getNome(), timeB.getNome());
+				repositorioPartida.save(partida);
+				campeonato.getPartidas().add(partida);
+			}
+		}
+	}
 }

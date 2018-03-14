@@ -4,16 +4,7 @@ import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 import org.springframework.format.annotation.DateTimeFormat;
@@ -53,6 +44,9 @@ public class Campeonato {
 	@ManyToMany
 	private Set<Equipe> equipes;
 
+	@OneToMany
+	private Set<Partida> partidas;
+
 	@Deprecated
 	public Campeonato() {
 	}
@@ -61,6 +55,14 @@ public class Campeonato {
 		this.nome = nome;
 		this.dataRealizacao = dataRealizacao;
 		this.equipes = new HashSet<>();
+	}
+
+	public Set<Partida> getPartidas() {
+		return partidas;
+	}
+
+	public void setPartidas(Set<Partida> partidas) {
+		this.partidas = partidas;
 	}
 
 	public Set<Equipe> getEquipes() {
