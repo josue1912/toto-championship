@@ -1,6 +1,6 @@
 package br.com.toto.model;
 
-import br.com.toto.utils.StatusPartida;
+import br.com.toto.utils.StatusPartidaEnum;
 
 import javax.persistence.*;
 
@@ -22,7 +22,7 @@ public class Partida {
     private Integer placarTimeB;
 
     @Enumerated(value = EnumType.STRING)
-    private StatusPartida status;
+    private StatusPartidaEnum status;
 
     @Deprecated
     public Partida(){}
@@ -30,7 +30,7 @@ public class Partida {
     public Partida(Equipe timeA, Equipe timeB) {
         this.timeA = timeA;
         this.timeB = timeB;
-        this.status = StatusPartida.NAO_REALIZADA;
+        this.status = StatusPartidaEnum.NAO_REALIZADA;
     }
 
     public Integer getId() {
@@ -73,11 +73,11 @@ public class Partida {
         this.placarTimeB = placarTimeB;
     }
 
-    public StatusPartida getStatus() {
+    public StatusPartidaEnum getStatus() {
         return status;
     }
 
-    public void setStatus(StatusPartida status) {
+    public void setStatus(StatusPartidaEnum status) {
         this.status = status;
     }
 }

@@ -11,7 +11,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
-import br.com.toto.utils.StatusCampeonato;
+import br.com.toto.utils.StatusCampeonatoEnum;
 
 @Entity
 public class Campeonato {
@@ -39,7 +39,7 @@ public class Campeonato {
 
 	@Enumerated(EnumType.STRING)
 	@NotNull
-	private StatusCampeonato status;
+	private StatusCampeonatoEnum status;
 
 	@ManyToMany
 	private Set<Equipe> equipes;
@@ -73,11 +73,11 @@ public class Campeonato {
 		this.equipes = equipes;
 	}
 
-	public StatusCampeonato getStatus() {
+	public StatusCampeonatoEnum getStatus() {
 		return status;
 	}
 
-	public void setStatus(StatusCampeonato status) {
+	public void setStatus(StatusCampeonatoEnum status) {
 		this.status = status;
 	}
 

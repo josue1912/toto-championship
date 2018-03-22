@@ -1,6 +1,6 @@
 package br.com.toto.utils;
 
-public enum StatusPartida {
+public enum StatusPartidaEnum {
 
 	NAO_REALIZADA, EM_ANDAMENTO, ENCERRADA;
 }
