@@ -60,7 +60,6 @@ public class CampeonatoController {
 
 	@PostMapping
 	public ResponseEntity<?> criarCampeonato(@RequestBody Campeonato campeonato, UriComponentsBuilder ucBuilder) {
-		logger.info("Cadastrando campeonato...");
 		Optional<Campeonato> campeonatoOptional = repositorio.findByNome(campeonato.getNome());
 		if (campeonatoOptional.isPresent()) {
 			Erro erro = new Erro("Já existe um campeonato com este nome");
@@ -77,7 +76,6 @@ public class CampeonatoController {
 
 	@GetMapping
 	public ResponseEntity<?> listarCampeonatos() {
-		logger.info("Buscando campeonatos...");
 		List<Campeonato> campeonatos = repositorio.findAll();
 		if (campeonatos.size() > 0) {
 			logger.info("{} campeonatos encontrados!", campeonatos.size());
@@ -90,13 +88,12 @@ public class CampeonatoController {
 
 	@GetMapping(value = "/{id}")
 	public ResponseEntity<?> buscarCampeonatoPorId(@PathVariable("id") Integer id) {
-		logger.info("Buscando campeonato com id:{}", id);
 		Optional<Campeonato> campeonato = repositorio.findById(id);
 		if (campeonato.isPresent()) {
-			logger.info("Campeonato com id {} encontrado", id);
+			logger.info("Campeonato com id [{}] encontrado", id);
 			return new ResponseEntity<>(campeonato.get(), HttpStatus.OK);
 		}
-		Erro erro = new Erro("Campeonato com id: " + id + " não encontrado");
+		Erro erro = new Erro("Campeonato com id [" + id + "] não encontrado");
 		logger.info(erro.getMensagem());
 		return new ResponseEntity<>(erro, HttpStatus.NOT_FOUND);
 	}
@@ -104,7 +101,6 @@ public class CampeonatoController {
 	@PostMapping(value = "/{idCampeonato}/jogador")
 	public ResponseEntity<?> inscreverJogadorNoCampeonato(@PathVariable("idCampeonato") Integer idCampeonato,
 			@RequestBody(required = true) Jogador jogador) {
-		logger.info("Inscrevendo jogador no campeonato...");
 		Optional<Campeonato> campeonatoOptional = repositorio.findById(idCampeonato);
 		Campeonato campeonato;
 		if (campeonatoOptional.isPresent()) {
@@ -123,7 +119,7 @@ public class CampeonatoController {
 			campeonato.setStatus(StatusCampeonatoEnum.EM_CRIACAO);
 			repositorio.save(campeonato);
 		} else {
-			Erro erro = new Erro("Campeonato com id: " + idCampeonato + " não encontrado");
+			Erro erro = new Erro("Campeonato com id [" + idCampeonato + "] não encontrado");
 			logger.info(erro.getMensagem());
 			return new ResponseEntity<>(erro, HttpStatus.NOT_FOUND);
 		}
@@ -136,20 +132,20 @@ public class CampeonatoController {
 		if (campeonatoOptional.isPresent()) {
 			Campeonato campeonato = campeonatoOptional.get();
             if (campeonato.getStatus().equals(StatusCampeonatoEnum.ENCERRADO)) {
-                Erro erro = new Erro("Este campeonato está encerrado");
+                Erro erro = new Erro("O campeonato ["+campeonato.getNome()+"] está encerrado");
                 logger.info(erro.getMensagem());
                 return new ResponseEntity<>(erro, HttpStatus.BAD_REQUEST);
             } else if (campeonato.getStatus().equals(StatusCampeonatoEnum.CONFIGURADO)){
 				campeonato.setStatus(StatusCampeonatoEnum.EM_ANDAMENTO);
-				logger.info("Campeonato [{}] iniciado",campeonato.getId());
+				logger.info("Campeonato [{}] iniciado",campeonato.getNome());
 				return new ResponseEntity<>(campeonato, HttpStatus.OK);
 			} else {
-				Erro erro = new Erro("O campeonato não está configurado. Sorteie as equipes antes de iniciar o campeonato");
+				Erro erro = new Erro("O campeonato ["+campeonato.getNome()+"] não está configurado. Sorteie as equipes antes de iniciar o campeonato");
 				logger.info(erro.getMensagem());
 				return new ResponseEntity<>(erro, HttpStatus.BAD_REQUEST);
 			}
 		}
-		Erro erro = new Erro("Campeonato com id: " + idCampeonato + " não encontrado");
+		Erro erro = new Erro("Campeonato com id [" + idCampeonato + "] não encontrado");
 		logger.info(erro.getMensagem());
 		return new ResponseEntity<>(erro, HttpStatus.NOT_FOUND);
 	}
@@ -159,9 +155,12 @@ public class CampeonatoController {
 	    Optional<Campeonato> campeonatoOptional = repositorio.findById(idCampeonato);
         if (campeonatoOptional.isPresent()){
             Campeonato campeonato = campeonatoOptional.get();
-            Optional<Partida> partida = campeonato.getPartidas().stream().filter(p -> p.getStatus().equals(StatusPartidaEnum.NAO_REALIZADA)).findAny();
-            if (partida.isPresent()) {
-                return new ResponseEntity<>(partida.get(), HttpStatus.OK);
+            Optional<Partida> partidaOptional = campeonato.getPartidas().stream().filter(p -> p.getStatus().equals(StatusPartidaEnum.NAO_REALIZADA)).findAny();
+            if (partidaOptional.isPresent()) {
+                Partida partida = partidaOptional.get();
+                partida.setStatus(StatusPartidaEnum.EM_ANDAMENTO);
+                repositorioPartida.save(partida);
+                return new ResponseEntity<>(partida, HttpStatus.OK);
             }
         }
         Erro erro = new Erro("Nenhuma partida com o status [NAO_REALIZADA] foi encontrada");
@@ -181,12 +180,12 @@ public class CampeonatoController {
 				repositorio.save(campeonato);
 				return new ResponseEntity<>(campeonato, HttpStatus.OK);
 			} else {
-				Erro erro = new Erro("Jogador com id: " + idJogador + " não encontrado");
+				Erro erro = new Erro("Jogador com id [" + idJogador + "] não encontrado");
 				logger.info(erro.getMensagem());
 				return new ResponseEntity<>(erro, HttpStatus.NOT_FOUND);
 			}
 		}
-		Erro erro = new Erro("Campeonato com id: " + idCampeonato + " não encontrado");
+		Erro erro = new Erro("Campeonato com id [" + idCampeonato + "] não encontrado");
 		logger.info(erro.getMensagem());
 		return new ResponseEntity<>(erro, HttpStatus.NOT_FOUND);
 	}
@@ -199,27 +198,27 @@ public class CampeonatoController {
 		if (campeonatoOptional.isPresent()) {
 			campeonato = campeonatoOptional.get();
 		} else {
-			Erro erro = new Erro("Campeonato com id: " + idCampeonato + " não encontrado");
+			Erro erro = new Erro("Campeonato com id [" + idCampeonato + "] não encontrado");
 			logger.info(erro.getMensagem());
 			return new ResponseEntity<>(erro, HttpStatus.NOT_FOUND);
 		}
 
 		if (campeonato.getStatus() != StatusCampeonatoEnum.EM_CRIACAO) {
-			Erro erro = new Erro("O campeonato não pode mais ser alterado");
+			Erro erro = new Erro("O campeonato ["+campeonato.getNome()+"] não pode mais ser alterado");
 			logger.info(erro.getMensagem());
 			return new ResponseEntity<>(erro, HttpStatus.BAD_REQUEST);
 		}
 
 		Integer qtdJogadores = campeonato.getJogadores().size();
 		if ((qtdJogadores < 4 || qtdJogadores > 40) && campeonato.getEquipes().size() < 1) {
-			Erro erro = new Erro("Existem " + qtdJogadores
-					+ " jogadores inscritos no campeonato. Para sortear os times, o campeonato deve ter entre 4 e 40 jogadores");
+			Erro erro = new Erro("Existem [" + qtdJogadores
+					+ "] jogadores inscritos no campeonato ["+campeonato.getNome()+"]. Para sortear os times, o campeonato deve ter entre 4 e 40 jogadores");
 			logger.info(erro.getMensagem());
 			return new ResponseEntity<>(erro, HttpStatus.BAD_REQUEST);
 		}
 		if (qtdJogadores % 2 != 0) {
-			Erro erro = new Erro("Existem " + qtdJogadores
-					+ " jogadores inscritos no campeonato. Para sortear os times, o número de jogadores inscritos deve ser par");
+			Erro erro = new Erro("Existem [" + qtdJogadores
+					+ "] jogadores inscritos no campeonato ["+campeonato.getNome()+"]. Para sortear os times, o número de jogadores inscritos deve ser par");
 			logger.info(erro.getMensagem());
 			return new ResponseEntity<>(erro, HttpStatus.BAD_REQUEST);
 		}
@@ -258,7 +257,7 @@ public class CampeonatoController {
 		Integer qtdTimes = campeonato.getJogadores().size() / 2;
 		while (timesSet.size() != qtdTimes) {
 			Time time = timesList.get(new Random().nextInt(timesList.size()));
-			logger.info("Time sorteado: {}", time.getNome());
+			logger.info("Time sorteado [{}]", time.getNome());
 			timesSet.add(time);
 		}
 		return timesSet;
@@ -272,7 +271,7 @@ public class CampeonatoController {
 			for (int j=i+1; j<equipes.length; j++){
 				Equipe timeB = (Equipe) equipes[j];
 				Partida partida = new Partida(timeA, timeB);
-				logger.info("Partida: {} x {}",timeA.getNome(), timeB.getNome());
+				logger.info("Partida [{} x {}]",timeA.getNome(), timeB.getNome());
 				repositorioPartida.save(partida);
 				campeonato.getPartidas().add(partida);
 			}
