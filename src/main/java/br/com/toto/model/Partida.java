@@ -31,6 +31,8 @@ public class Partida {
         this.timeA = timeA;
         this.timeB = timeB;
         this.status = StatusPartidaEnum.NAO_REALIZADA;
+        this.placarTimeA = 0;
+        this.placarTimeB = 0;
     }
 
     public Integer getId() {
@@ -61,16 +63,24 @@ public class Partida {
         return placarTimeA;
     }
 
-    public void setPlacarTimeA(Integer placarTimeA) {
-        this.placarTimeA = placarTimeA;
+    public void incrementaPlacarTimeA() {
+        this.placarTimeA++;
+    }
+
+    public void decrementaPlacarTimeA() {
+        this.placarTimeA--;
     }
 
     public Integer getPlacarTimeB() {
         return placarTimeB;
     }
 
-    public void setPlacarTimeB(Integer placarTimeB) {
-        this.placarTimeB = placarTimeB;
+    public void incrementaPlacarTimeB() {
+        this.placarTimeB++;
+    }
+
+    public void decrementaPlacarTimeB() {
+        this.placarTimeB--;
     }
 
     public StatusPartidaEnum getStatus() {

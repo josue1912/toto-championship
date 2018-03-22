@@ -155,11 +155,20 @@ public class CampeonatoController {
 	    Optional<Campeonato> campeonatoOptional = repositorio.findById(idCampeonato);
         if (campeonatoOptional.isPresent()){
             Campeonato campeonato = campeonatoOptional.get();
+            Optional<Partida> partidaEmAndamentoOptional = campeonato.getPartidas().stream().filter(p -> p.getStatus().equals(StatusPartidaEnum.EM_ANDAMENTO)).findFirst();
+            if (partidaEmAndamentoOptional.isPresent()){
+                Partida partidaEmAndamento = partidaEmAndamentoOptional.get();
+                Erro erro = new Erro("A partida ["+ partidaEmAndamento.getTimeA().getNome()+" x "+partidaEmAndamento.getTimeB().getNome()+"] está em andamento. Encerre a partida antes de buscar a próxima partida");
+                logger.info(erro.getMensagem());
+                return new ResponseEntity<>(erro, HttpStatus.BAD_REQUEST);
+            }
+
             Optional<Partida> partidaOptional = campeonato.getPartidas().stream().filter(p -> p.getStatus().equals(StatusPartidaEnum.NAO_REALIZADA)).findAny();
             if (partidaOptional.isPresent()) {
                 Partida partida = partidaOptional.get();
                 partida.setStatus(StatusPartidaEnum.EM_ANDAMENTO);
                 repositorioPartida.save(partida);
+                logger.info("Proxima partida [{} x {}]",partida.getTimeA().getNome(), partida.getTimeB().getNome());
                 return new ResponseEntity<>(partida, HttpStatus.OK);
             }
         }
