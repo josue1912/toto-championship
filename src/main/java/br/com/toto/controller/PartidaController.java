@@ -80,4 +80,24 @@ public class PartidaController {
         logger.info(erro.getMensagem());
         return new ResponseEntity<>(erro, HttpStatus.NOT_FOUND);
     }
+
+    @PutMapping(value="/{idPartida}/encerrarPartida")
+    public ResponseEntity<?> encerrarPartida(@PathVariable("idPartida") Integer idPartida){
+        Optional<Partida> partidaOptional = repositorio.findById(idPartida);
+        if (partidaOptional.isPresent()){
+            Partida partida = partidaOptional.get();
+            if(partida.getStatus().equals(StatusPartidaEnum.EM_ANDAMENTO)) {
+                partida.setStatus(StatusPartidaEnum.ENCERRADA);
+                repositorio.save(partida);
+                return new ResponseEntity<>(partida, HttpStatus.OK);
+            }else{
+                Erro erro = new Erro("Esta partida não está em andamento");
+                logger.info(erro.getMensagem());
+                return new ResponseEntity<>(erro, HttpStatus.BAD_REQUEST);
+            }
+        }
+        Erro erro = new Erro("Partida com id ["+idPartida+"] não encontrada");
+        logger.info(erro.getMensagem());
+        return new ResponseEntity<>(erro, HttpStatus.NOT_FOUND);
+    }
 }

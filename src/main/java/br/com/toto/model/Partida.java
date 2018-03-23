@@ -68,7 +68,9 @@ public class Partida {
     }
 
     public void decrementaPlacarTimeA() {
-        this.placarTimeA--;
+        if (this.placarTimeA > 0) {
+            this.placarTimeA--;
+        }
     }
 
     public Integer getPlacarTimeB() {
@@ -80,7 +82,9 @@ public class Partida {
     }
 
     public void decrementaPlacarTimeB() {
-        this.placarTimeB--;
+        if (this.placarTimeB > 0) {
+            this.placarTimeB--;
+        }
     }
 
     public StatusPartidaEnum getStatus() {
