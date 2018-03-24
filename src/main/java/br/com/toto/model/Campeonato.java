@@ -55,6 +55,7 @@ public class Campeonato {
 		this.nome = nome;
 		this.dataRealizacao = dataRealizacao;
 		this.equipes = new HashSet<>();
+		this.status = StatusCampeonatoEnum.EM_CRIACAO;
 	}
 
 	public Set<Partida> getPartidas() {
