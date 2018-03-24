@@ -2,8 +2,10 @@ package br.com.toto.controller;
 
 import br.com.toto.dto.Erro;
 import br.com.toto.model.Campeonato;
+import br.com.toto.model.Equipe;
 import br.com.toto.model.Partida;
 import br.com.toto.repository.CampeonatoRepository;
+import br.com.toto.repository.EquipeRepository;
 import br.com.toto.repository.PartidaRepository;
 import br.com.toto.utils.StatusCampeonatoEnum;
 import br.com.toto.utils.StatusPartidaEnum;
@@ -28,6 +30,9 @@ public class PartidaController {
     @Autowired
     private CampeonatoRepository repositorioCampeonato;
 
+    @Autowired
+    private EquipeRepository equipeRepository;
+
     private static final Logger logger = LoggerFactory.getLogger(PartidaController.class);
 
     @PutMapping(value = "/{idPartida}/incrementarPlacar/{idEquipe}")
@@ -45,7 +50,7 @@ public class PartidaController {
                 } else if (partida.getTimeB().getId() == idEquipe) {
                     partida.incrementaPlacarTimeB();
                 } else {
-                    Erro erro = new Erro("Equipe com id [" + idPartida + "] inválida para esta partida");
+                    Erro erro = new Erro("Equipe com id [" + idEquipe + "] inválida para esta partida");
                     logger.info(erro.getMensagem());
                     return new ResponseEntity<>(erro, HttpStatus.BAD_REQUEST);
                 }
@@ -108,6 +113,7 @@ public class PartidaController {
             if(partida.getStatus().equals(StatusPartidaEnum.EM_ANDAMENTO)) {
                 partida.setStatus(StatusPartidaEnum.ENCERRADA);
                 repositorio.save(partida);
+                this.atualizaClassificacao(partida);
                 return new ResponseEntity<>(partida, HttpStatus.OK);
             }else{
                 Erro erro = new Erro("Esta partida não está em andamento");
@@ -120,7 +126,7 @@ public class PartidaController {
         return new ResponseEntity<>(erro, HttpStatus.NOT_FOUND);
     }
 
-    @GetMapping(value = "/{idCampeonato}/proximaPartida")
+    @GetMapping(value = "/campeonato/{idCampeonato}/proximaPartida")
     @ApiOperation(
             value = "Sorteia a próxima partida do campeonato",
             response = Partida.class
@@ -163,5 +169,24 @@ public class PartidaController {
         Erro erro = new Erro("Nenhuma partida com o status [NAO_REALIZADA] foi encontrada");
         logger.info(erro.getMensagem());
         return new ResponseEntity<>(erro, HttpStatus.NOT_FOUND);
+    }
+
+    private void atualizaClassificacao(Partida partida){
+        Equipe equipeA = equipeRepository.findById(partida.getTimeA().getId()).get();
+        Equipe equipeB = equipeRepository.findById(partida.getTimeB().getId()).get();
+
+        if (partida.getPlacarTimeA() == partida.getPlacarTimeB()){
+            equipeA.adicionaEmpate(partida.getPlacarTimeA());
+            equipeB.adicionaEmpate(partida.getPlacarTimeB());
+        }else if (partida.getPlacarTimeA() > partida.getPlacarTimeB()){
+            equipeA.adicionaVitoria(partida.getPlacarTimeA(),partida.getPlacarTimeB());
+            equipeB.adicionaDerrota(partida.getPlacarTimeB(),partida.getPlacarTimeA());
+        }else if (partida.getPlacarTimeA() < partida.getPlacarTimeB()){
+            equipeA.adicionaDerrota(partida.getPlacarTimeA(),partida.getPlacarTimeB());
+            equipeB.adicionaVitoria(partida.getPlacarTimeB(),partida.getPlacarTimeA());
+        }
+
+        equipeRepository.save(equipeA);
+        equipeRepository.save(equipeB);
     }
 }
