@@ -75,15 +75,14 @@ public class CampeonatoController {
                 return new ResponseEntity<>(erro, HttpStatus.BAD_REQUEST);
             }else {
                 Optional<Jogador> jogadorOptional = repositorioJogador.findByEmail(jogador.getEmail());
-                Jogador novoJogador;
                 if (jogadorOptional.isPresent()) {
                     campeonato.getJogadores().add(jogadorOptional.get());
                     logger.info("O jogador [{}] já existia e foi inscrito no campeonato [{}]", jogador.getNome(),
                             campeonato.getNome());
                 } else {
-                    novoJogador = repositorioJogador.save(jogador);
+                    Jogador novoJogador = repositorioJogador.save(jogador);
                     campeonato.getJogadores().add(novoJogador);
-                    logger.info("O jogador [{}] foi inscrito no campeonato [{}]", jogador.getNome(), campeonato.getNome());
+                    logger.info("O jogador [{}] foi cadastrado e inscrito no campeonato [{}]", jogador.getNome(), campeonato.getNome());
                 }
                 campeonato.setStatus(StatusCampeonatoEnum.EM_CRIACAO);
                 repositorio.save(campeonato);
@@ -102,7 +101,7 @@ public class CampeonatoController {
                 response = Campeonato.class,
                 consumes = MediaType.APPLICATION_JSON_UTF8_VALUE
 			)
-	public ResponseEntity<?> criarCampeonato(@RequestBody Campeonato campeonato, UriComponentsBuilder ucBuilder) {
+	public ResponseEntity<?> criarCampeonato(@Valid @RequestBody Campeonato campeonato, UriComponentsBuilder ucBuilder) {
 		logger.info("Objeto recebido"+campeonato.getNome()+" - "+campeonato.getDataRealizacao());
 
 		Optional<Campeonato> campeonatoOptional = repositorio.findByNome(campeonato.getNome());
@@ -111,7 +110,6 @@ public class CampeonatoController {
 			logger.info(erro.getMensagem());
 			return new ResponseEntity<>(erro, HttpStatus.CONFLICT);
 		}
-		campeonato.setStatus(StatusCampeonatoEnum.EM_CRIACAO);
 		Campeonato campeonatoSalvo = repositorio.save(campeonato);
 		HttpHeaders headers = new HttpHeaders();
 		headers.setLocation(ucBuilder.path("/campeonatos/{id}").buildAndExpand(campeonatoSalvo.getId()).toUri());
@@ -199,7 +197,6 @@ public class CampeonatoController {
             }else{
                 Optional<Jogador> jogadorOptional = repositorioJogador.findById(idJogador);
                 if (jogadorOptional.isPresent()) {
-
                     campeonato.getJogadores().remove(jogadorOptional.get());
                     repositorio.save(campeonato);
                     return new ResponseEntity<>(campeonato, HttpStatus.OK);
@@ -256,15 +253,18 @@ public class CampeonatoController {
 
 		montarEquipes(campeonato);
 		montarTabelaDePartidas(campeonato);
+        campeonato.setStatus(StatusCampeonatoEnum.CONFIGURADO);
 		repositorio.save(campeonato);
 		return new ResponseEntity<>(campeonato, HttpStatus.OK);
 	}
 
 	private void montarEquipes(Campeonato campeonato) {
+        logger.info("Montando equipes...");
 		Set<Time> times = sortearTimes(campeonato);
 		Equipe equipe;
 		for (Time time : times) {
-			equipe = new Equipe(time.getNome());
+            logger.info("Time [{}]",time.getNome());
+		    equipe = new Equipe(time.getNome());
 			Set<Jogador> jogadores = new HashSet<>();
 			jogadores.add(sortearJogador(campeonato));
 			jogadores.add(sortearJogador(campeonato));
@@ -272,13 +272,13 @@ public class CampeonatoController {
 			repositorioEquipe.save(equipe);
 			campeonato.getEquipes().add(equipe);
 		}
-		campeonato.setStatus(StatusCampeonatoEnum.CONFIGURADO);
 	}
 
 	private Jogador sortearJogador(Campeonato campeonato) {
 		Integer jogadorSorteado = new Random().nextInt(campeonato.getJogadores().size());
 		Jogador jogador = (Jogador) campeonato.getJogadores().toArray()[jogadorSorteado];
 		campeonato.getJogadores().remove(jogador);
+		logger.info("Jogador sorteado [{}]",jogador.getNome());
 		return jogador;
 	}
 
