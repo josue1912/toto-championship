@@ -9,13 +9,12 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import br.com.toto.utils.StatusPartidaEnum;
+import com.sun.xml.internal.ws.api.pipe.ContentType;
+import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -32,8 +31,11 @@ import br.com.toto.repository.PartidaRepository;
 import br.com.toto.repository.TimeRepository;
 import br.com.toto.utils.StatusCampeonatoEnum;
 
+import javax.validation.Valid;
+
 @RestController
-@RequestMapping(value = "/campeonatos", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping
+        (value = "/campeonatos", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class CampeonatoController {
 
 	@Autowired
@@ -53,7 +55,53 @@ public class CampeonatoController {
 
 	private static final Logger logger = LoggerFactory.getLogger(CampeonatoController.class);
 
+
+    @PostMapping(value = "/{idCampeonato}/jogador")
+	@ApiOperation(
+            value = "Cadastra e/ou inscreve um jogador no campeonato",
+            response = Campeonato.class,
+            consumes = MediaType.APPLICATION_JSON_UTF8_VALUE
+    )
+    public ResponseEntity<?> inscreverJogadorNoCampeonato(@PathVariable("idCampeonato") Integer idCampeonato,
+                                                          @Valid @RequestBody(required = true) Jogador jogador) {
+        Optional<Campeonato> campeonatoOptional = repositorio.findById(idCampeonato);
+        Campeonato campeonato;
+        if (campeonatoOptional.isPresent()) {
+            campeonato = campeonatoOptional.get();
+            if (campeonato.getStatus().equals(StatusCampeonatoEnum.EM_ANDAMENTO) ||
+                    campeonato.getStatus().equals(StatusCampeonatoEnum.ENCERRADO)) {
+                Erro erro = new Erro("O campeonato com id [" + idCampeonato + "] não pode ser alterado pois está com status ["+campeonato.getStatus()+"]");
+                logger.info(erro.getMensagem());
+                return new ResponseEntity<>(erro, HttpStatus.BAD_REQUEST);
+            }else {
+                Optional<Jogador> jogadorOptional = repositorioJogador.findByEmail(jogador.getEmail());
+                Jogador novoJogador;
+                if (jogadorOptional.isPresent()) {
+                    campeonato.getJogadores().add(jogadorOptional.get());
+                    logger.info("O jogador [{}] já existia e foi inscrito no campeonato [{}]", jogador.getNome(),
+                            campeonato.getNome());
+                } else {
+                    novoJogador = repositorioJogador.save(jogador);
+                    campeonato.getJogadores().add(novoJogador);
+                    logger.info("O jogador [{}] foi inscrito no campeonato [{}]", jogador.getNome(), campeonato.getNome());
+                }
+                campeonato.setStatus(StatusCampeonatoEnum.EM_CRIACAO);
+                repositorio.save(campeonato);
+            }
+        } else {
+            Erro erro = new Erro("Campeonato com id [" + idCampeonato + "] não encontrado");
+            logger.info(erro.getMensagem());
+            return new ResponseEntity<>(erro, HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(campeonato, HttpStatus.CREATED);
+    }
+
 	@PostMapping
+	@ApiOperation(
+                value = "Cadastrar campeonato",
+                response = Campeonato.class,
+                consumes = MediaType.APPLICATION_JSON_UTF8_VALUE
+			)
 	public ResponseEntity<?> criarCampeonato(@RequestBody Campeonato campeonato, UriComponentsBuilder ucBuilder) {
 		logger.info("Objeto recebido"+campeonato.getNome()+" - "+campeonato.getDataRealizacao());
 
@@ -72,6 +120,10 @@ public class CampeonatoController {
 	}
 
 	@GetMapping
+    @ApiOperation(
+            value = "Listar todos os campeonatos cadastrados",
+            response = Campeonato[].class
+    )
 	public ResponseEntity<?> listarCampeonatos() {
 		List<Campeonato> campeonatos = repositorio.findAll();
 		if (campeonatos.size() > 0) {
@@ -84,6 +136,10 @@ public class CampeonatoController {
 	}
 
 	@GetMapping(value = "/{id}")
+    @ApiOperation(
+            value = "Buscar um campeonato por {id}",
+            response = Campeonato.class
+    )
 	public ResponseEntity<?> buscarCampeonatoPorId(@PathVariable("id") Integer id) {
 		Optional<Campeonato> campeonato = repositorio.findById(id);
 		if (campeonato.isPresent()) {
@@ -95,35 +151,12 @@ public class CampeonatoController {
 		return new ResponseEntity<>(erro, HttpStatus.NOT_FOUND);
 	}
 
-	@PostMapping(value = "/{idCampeonato}/jogador")
-	public ResponseEntity<?> inscreverJogadorNoCampeonato(@PathVariable("idCampeonato") Integer idCampeonato,
-			@RequestBody(required = true) Jogador jogador) {
-		Optional<Campeonato> campeonatoOptional = repositorio.findById(idCampeonato);
-		Campeonato campeonato;
-		if (campeonatoOptional.isPresent()) {
-			campeonato = campeonatoOptional.get();
-			Optional<Jogador> jogadorOptional = repositorioJogador.findByEmail(jogador.getEmail());
-			Jogador novoJogador;
-			if (jogadorOptional.isPresent()) {
-				campeonato.getJogadores().add(jogadorOptional.get());
-				logger.info("O jogador [{}] já existia e foi inscrito no campeonato [{}]", jogador.getNome(),
-						campeonato.getNome());
-			} else {
-				novoJogador = repositorioJogador.save(jogador);
-				campeonato.getJogadores().add(novoJogador);
-				logger.info("O jogador [{}] foi inscrito no campeonato [{}]", jogador.getNome(), campeonato.getNome());
-			}
-			campeonato.setStatus(StatusCampeonatoEnum.EM_CRIACAO);
-			repositorio.save(campeonato);
-		} else {
-			Erro erro = new Erro("Campeonato com id [" + idCampeonato + "] não encontrado");
-			logger.info(erro.getMensagem());
-			return new ResponseEntity<>(erro, HttpStatus.NOT_FOUND);
-		}
-		return new ResponseEntity<>(campeonato, HttpStatus.CREATED);
-	}
-
 	@PutMapping(value="/{idCampeonato}/iniciar")
+    @ApiOperation(
+            value = "Inicia um campeonato",
+            response = Campeonato.class,
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE
+    )
 	public ResponseEntity<?> iniciarCampeonato(@PathVariable("idCampeonato") Integer idCampeonato){
 		Optional<Campeonato> campeonatoOptional = repositorio.findById(idCampeonato);
 		if (campeonatoOptional.isPresent()) {
@@ -147,63 +180,36 @@ public class CampeonatoController {
 		return new ResponseEntity<>(erro, HttpStatus.NOT_FOUND);
 	}
 
-	@GetMapping(value = "/{idCampeonato}/proximaPartida")
-	private ResponseEntity<?> proximaPartida(@PathVariable("idCampeonato") Integer idCampeonato){
-	    Optional<Campeonato> campeonatoOptional = repositorio.findById(idCampeonato);
-        if (campeonatoOptional.isPresent()){
-            Campeonato campeonato = campeonatoOptional.get();
-            if (campeonato.getStatus().equals(StatusCampeonatoEnum.CONFIGURADO)){
-                Optional<Partida> partidaEmAndamentoOptional = campeonato.getPartidas().stream().filter(p -> p.getStatus().equals(StatusPartidaEnum.EM_ANDAMENTO)).findFirst();
-                if (partidaEmAndamentoOptional.isPresent()){
-                    Partida partidaEmAndamento = partidaEmAndamentoOptional.get();
-                    Erro erro = new Erro("A partida ["+ partidaEmAndamento.getTimeA().getNome()+" x "+partidaEmAndamento.getTimeB().getNome()+"] está em andamento. Encerre a partida antes de buscar a próxima partida");
-                    logger.info(erro.getMensagem());
-                    return new ResponseEntity<>(erro, HttpStatus.BAD_REQUEST);
-                }
-
-                Optional<Partida> partidaOptional = campeonato.getPartidas().stream().filter(p -> p.getStatus().equals(StatusPartidaEnum.NAO_REALIZADA)).findAny();
-                if (partidaOptional.isPresent()) {
-                    Partida partida = partidaOptional.get();
-                    partida.setStatus(StatusPartidaEnum.EM_ANDAMENTO);
-                    repositorioPartida.save(partida);
-                    logger.info("Proxima partida [{} x {}]",partida.getTimeA().getNome(), partida.getTimeB().getNome());
-                    return new ResponseEntity<>(partida, HttpStatus.OK);
-                }else{
-                    campeonato.setStatus(StatusCampeonatoEnum.ENCERRADO);
-                    repositorio.save(campeonato);
-                    return new ResponseEntity<>(campeonato, HttpStatus.OK);
-                }
-            }else if (campeonato.getStatus().equals(StatusCampeonatoEnum.ENCERRADO)) {
-                Erro erro = new Erro("O campeonato  ["+ campeonato.getNome()+"] está encerrado");
-                logger.info(erro.getMensagem());
-                return new ResponseEntity<>(erro, HttpStatus.BAD_REQUEST);
-            }else{
-                Erro erro = new Erro("O campeonato  ["+ campeonato.getNome()+"] não está totalmente configurado");
-                logger.info(erro.getMensagem());
-                return new ResponseEntity<>(erro, HttpStatus.BAD_REQUEST);
-            }
-        }
-        Erro erro = new Erro("Nenhuma partida com o status [NAO_REALIZADA] foi encontrada");
-        logger.info(erro.getMensagem());
-        return new ResponseEntity<>(erro, HttpStatus.NOT_FOUND);
-    }
-
 	@PutMapping(value = "/{idCampeonato}/jogador/{idJogador}")
+    @ApiOperation(
+            value = "Remove um jogador do campeonato",
+            response = Campeonato.class,
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE
+    )
 	public ResponseEntity<?> removerJogadorDoCampeonato(@PathVariable("idCampeonato") Integer idCampeonato,
 			@PathVariable("idJogador") Integer idJogador) {
 		Optional<Campeonato> campeonatoOptional = repositorio.findById(idCampeonato);
 		if (campeonatoOptional.isPresent()) {
-			Optional<Jogador> jogadorOptional = repositorioJogador.findById(idJogador);
-			if (jogadorOptional.isPresent()) {
-				Campeonato campeonato = campeonatoOptional.get();
-				campeonato.getJogadores().remove(jogadorOptional.get());
-				repositorio.save(campeonato);
-				return new ResponseEntity<>(campeonato, HttpStatus.OK);
-			} else {
-				Erro erro = new Erro("Jogador com id [" + idJogador + "] não encontrado");
-				logger.info(erro.getMensagem());
-				return new ResponseEntity<>(erro, HttpStatus.NOT_FOUND);
-			}
+            Campeonato campeonato = campeonatoOptional.get();
+            if (campeonato.getStatus().equals(StatusCampeonatoEnum.EM_ANDAMENTO) ||
+                    campeonato.getStatus().equals(StatusCampeonatoEnum.ENCERRADO)){
+                Erro erro = new Erro("O campeonato com id ["+idCampeonato+"] não pode ser alterado pois está com status ["+campeonato.getStatus()+"]");
+                logger.info(erro.getMensagem());
+                return new ResponseEntity<>(erro, HttpStatus.BAD_REQUEST);
+            }else{
+                Optional<Jogador> jogadorOptional = repositorioJogador.findById(idJogador);
+                if (jogadorOptional.isPresent()) {
+
+                    campeonato.getJogadores().remove(jogadorOptional.get());
+                    repositorio.save(campeonato);
+                    return new ResponseEntity<>(campeonato, HttpStatus.OK);
+                } else {
+                    Erro erro = new Erro("Jogador com id [" + idJogador + "] não encontrado");
+                    logger.info(erro.getMensagem());
+                    return new ResponseEntity<>(erro, HttpStatus.NOT_FOUND);
+                }
+            }
+
 		}
 		Erro erro = new Erro("Campeonato com id [" + idCampeonato + "] não encontrado");
 		logger.info(erro.getMensagem());
@@ -211,6 +217,11 @@ public class CampeonatoController {
 	}
 
 	@PutMapping(value = "/{idCampeonato}/sortearEquipes")
+    @ApiOperation(
+            value = "Sorteia as equipes para a disputa do campeonato",
+            response = Campeonato.class,
+            consumes = MediaType.APPLICATION_JSON_UTF8_VALUE
+    )
 	private ResponseEntity<?> sortearEquipes(@PathVariable("idCampeonato") Integer idCampeonato) {
 		Optional<Campeonato> campeonatoOptional = repositorio.findById(idCampeonato);
 		Campeonato campeonato;

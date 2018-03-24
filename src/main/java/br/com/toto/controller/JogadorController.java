@@ -3,11 +3,14 @@ package br.com.toto.controller;
 import java.util.List;
 import java.util.Optional;
 
+import br.com.toto.model.Partida;
+import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,7 +24,7 @@ import br.com.toto.model.Jogador;
 import br.com.toto.repository.JogadorRepository;
 
 @RestController
-@RequestMapping("/jogador")
+@RequestMapping(value = "/jogador", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class JogadorController {
 
 	@Autowired
@@ -30,6 +33,11 @@ public class JogadorController {
 	public static final Logger logger = LoggerFactory.getLogger(JogadorController.class);
 	
 	@PostMapping
+	@ApiOperation(
+			value = "Cadastra um jogador",
+			response = Jogador.class,
+			consumes = MediaType.APPLICATION_JSON_UTF8_VALUE
+	)
 	public ResponseEntity<?> criarJogador(@RequestBody Jogador jogador, UriComponentsBuilder builder){
 		logger.info("Cadastrando jogador...");
 		Optional<Jogador> jogadorOptional = repositorio.findByEmail(jogador.getEmail());
@@ -46,6 +54,11 @@ public class JogadorController {
 	}
 	
 	@GetMapping
+	@ApiOperation(
+			value = "Lista todos os jogadores cadastrados",
+			response = Jogador[].class,
+			consumes = MediaType.APPLICATION_JSON_UTF8_VALUE
+	)
 	public ResponseEntity<?> listarJogadores(){
 		List<Jogador> jogadores = repositorio.findAll();
 		return new ResponseEntity<List<Jogador>>(jogadores, HttpStatus.OK);
