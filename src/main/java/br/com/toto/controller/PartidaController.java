@@ -35,6 +35,23 @@ public class PartidaController {
 
     private static final Logger logger = LoggerFactory.getLogger(PartidaController.class);
 
+    @GetMapping(value="/{idPartida}")
+    @ApiOperation(
+        value = "Busca uma partida pelo ID",
+        response = Partida.class
+    )
+    public ResponseEntity<?> buscaPartidaPorId(@PathVariable("idPartida") Integer idPartida){
+        Optional<Partida> partidaOptional = repositorio.findById(idPartida);
+        if (partidaOptional.isPresent()){
+            return new ResponseEntity<>(partidaOptional.get(), HttpStatus.OK);
+        }else{
+
+            Erro erro = new Erro("Partida com id ["+idPartida+"] não encontrada");
+            logger.info(erro.getMensagem());
+            return new ResponseEntity<>(erro, HttpStatus.NOT_FOUND);
+        }
+    }
+
     @PutMapping(value = "/{idPartida}/incrementarPlacar/{idEquipe}")
     @ApiOperation(
             value = "Incrementa um gol ao placar da equipe",
@@ -44,7 +61,7 @@ public class PartidaController {
         Optional<Partida> partidaOptional = repositorio.findById(idPartida);
         if (partidaOptional.isPresent()){
             Partida partida = partidaOptional.get();
-            if (partida.getStatus().equals(StatusPartidaEnum.EM_ANDAMENTO)) {
+//            if (partida.getStatus().equals(StatusPartidaEnum.EM_ANDAMENTO)) {
                 if (partida.getTimeA().getId() == idEquipe) {
                     partida.incrementaPlacarTimeA();
                 } else if (partida.getTimeB().getId() == idEquipe) {
@@ -56,11 +73,11 @@ public class PartidaController {
                 }
                 repositorio.save(partida);
                 return new ResponseEntity<>(partida, HttpStatus.OK);
-            }else{
-                Erro erro = new Erro("Esta partida não está em andamento");
-                logger.info(erro.getMensagem());
-                return new ResponseEntity<>(erro, HttpStatus.BAD_REQUEST);
-            }
+//            }else{
+//                Erro erro = new Erro("Esta partida não está em andamento");
+//                logger.info(erro.getMensagem());
+//                return new ResponseEntity<>(erro, HttpStatus.BAD_REQUEST);
+//            }
         }
         Erro erro = new Erro("Partida com id ["+idPartida+"] não encontrada");
         logger.info(erro.getMensagem());
@@ -77,7 +94,7 @@ public class PartidaController {
         Optional<Partida> partidaOptional = repositorio.findById(idPartida);
         if (partidaOptional.isPresent()){
             Partida partida = partidaOptional.get();
-            if (partida.getStatus().equals(StatusPartidaEnum.EM_ANDAMENTO)) {
+//            if (partida.getStatus().equals(StatusPartidaEnum.EM_ANDAMENTO)) {
                 if (partida.getTimeA().getId() == idEquipe) {
                     partida.decrementaPlacarTimeA();
                 } else if (partida.getTimeB().getId() == idEquipe) {
@@ -89,11 +106,11 @@ public class PartidaController {
                 }
                 repositorio.save(partida);
                 return new ResponseEntity<>(partida, HttpStatus.OK);
-            }else{
-                Erro erro = new Erro("Esta partida não está em andamento");
-                logger.info(erro.getMensagem());
-                return new ResponseEntity<>(erro, HttpStatus.BAD_REQUEST);
-            }
+//            }else{
+//                Erro erro = new Erro("Esta partida não está em andamento");
+//                logger.info(erro.getMensagem());
+//                return new ResponseEntity<>(erro, HttpStatus.BAD_REQUEST);
+//            }
         }
         Erro erro = new Erro("Partida com id ["+idPartida+"] não encontrada");
         logger.info(erro.getMensagem());

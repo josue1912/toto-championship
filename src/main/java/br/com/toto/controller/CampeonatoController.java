@@ -1,37 +1,22 @@
 package br.com.toto.controller;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
-import java.util.Set;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
-
-import br.com.toto.utils.StatusPartidaEnum;
-import com.sun.xml.internal.ws.api.pipe.ContentType;
+import br.com.toto.dto.Erro;
+import br.com.toto.model.*;
+import br.com.toto.repository.*;
+import br.com.toto.utils.StatusCampeonatoEnum;
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import br.com.toto.dto.Erro;
-import br.com.toto.model.Campeonato;
-import br.com.toto.model.Equipe;
-import br.com.toto.model.Jogador;
-import br.com.toto.model.Partida;
-import br.com.toto.model.Time;
-import br.com.toto.repository.CampeonatoRepository;
-import br.com.toto.repository.EquipeRepository;
-import br.com.toto.repository.JogadorRepository;
-import br.com.toto.repository.PartidaRepository;
-import br.com.toto.repository.TimeRepository;
-import br.com.toto.utils.StatusCampeonatoEnum;
-
 import javax.validation.Valid;
+import java.util.*;
 
 @RestController
 @RequestMapping
@@ -253,7 +238,7 @@ public class CampeonatoController {
 
 		montarEquipes(campeonato);
 		montarTabelaDePartidas(campeonato);
-        campeonato.setStatus(StatusCampeonatoEnum.CONFIGURADO);
+		campeonato.setStatus(StatusCampeonatoEnum.EM_ANDAMENTO);
 		repositorio.save(campeonato);
 		return new ResponseEntity<>(campeonato, HttpStatus.OK);
 	}
