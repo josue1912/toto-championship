@@ -299,9 +299,15 @@ public class CampeonatoController {
     public ResponseEntity<?> retornaClassificacaoDoCampeonato(@PathVariable(value = "idCampeonato") Integer idCampeonato){
         Optional<Campeonato> campeonatoOptional = repositorio.findById(idCampeonato);
         if (campeonatoOptional.isPresent()){
-            Stream<Equipe> classificacao = campeonatoOptional.get().getEquipes().stream()
-                    .sorted(Comparator.reverseOrder());
-            return new ResponseEntity<>(classificacao, HttpStatus.OK);
+            if (campeonatoOptional.get().getStatus().equals(StatusCampeonatoEnum.EM_ANDAMENTO)){
+                Stream<Equipe> classificacao = campeonatoOptional.get().getEquipes().stream()
+                        .sorted(Comparator.reverseOrder());
+                return new ResponseEntity<>(classificacao, HttpStatus.OK);
+            }else{
+                Erro erro = new Erro("Campeonato com id [" + idCampeonato+ "] não está em andamento");
+                logger.info(erro.getMensagem());
+                return new ResponseEntity<>(erro, HttpStatus.BAD_REQUEST);
+            }
         }else{
             Erro erro = new Erro("Campeonato com id [" + idCampeonato+ "] não encontrado");
             logger.info(erro.getMensagem());
