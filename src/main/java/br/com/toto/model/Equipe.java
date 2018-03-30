@@ -1,5 +1,6 @@
 package br.com.toto.model;
 
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -10,7 +11,7 @@ import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 
 @Entity
-public class Equipe {
+public class Equipe implements Comparable{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -127,5 +128,38 @@ public class Equipe {
 
     private void adicionaGolsContra(Integer golsContra) {
         this.golsContra += golsContra;
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        if (o instanceof Equipe){
+            Equipe equipe = (Equipe) o;
+            if (this.pontos > equipe.getPontos()) {
+                return 1;
+            }else if (this.pontos < equipe.getPontos()){
+                return -1;
+            }else{
+                if (this.vitorias > equipe.getVitorias()){
+                    return 1;
+                }else if (this.vitorias < equipe.getVitorias()){
+                    return -1;
+                }else{
+                    if (this.saldoDeGols > equipe.getSaldoDeGols()){
+                        return 1;
+                    }else if (this.saldoDeGols < equipe.getSaldoDeGols()){
+                        return -1;
+                    }else{
+                        if (this.golsAFavor > equipe.getGolsAFavor()){
+                            return 1;
+                        }else if (this.golsAFavor < equipe.getGolsAFavor()){
+                            return -1;
+                        }else{
+                            return 0;
+                        }
+                    }
+                }
+            }
+        }
+        return 0;
     }
 }
