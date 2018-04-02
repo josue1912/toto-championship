@@ -35,12 +35,12 @@ insert into jogador (id, nome, email) values (6, 'Bebeto', 'bebeto@futebol.com.b
 insert into regra (id, descricao) values(1, 'Roletou? É penalti');
 
 -- ### CADASTRO DE CAMPEONATO
-insert into campeonato(id, nome, data_realizacao, status) values (1, 'Estadual 2018', '2018-01-01', 'EM_CRIACAO');
-insert into campeonato(id, nome, data_realizacao, status) values (2, 'Brasileiro 2018', '2018-01-01', 'EM_ANDAMENTO');
+insert into campeonato(id, nome, data_realizacao, status) values (1, 'Estadual 2018', '2018-01-01', 'EM_ANDAMENTO');
+insert into campeonato(id, nome, data_realizacao, status) values (2, 'Brasileiro 2018', '2018-01-01', 'EM_CRIACAO');
 
-insert into equipe (id, derrotas, empates, golsafavor, gols_contra, nome, pontos, saldo_de_gols, vitorias) values(1,0,0,0,0,'Bahia',0,0,0);
-insert into equipe (id, derrotas, empates, golsafavor, gols_contra, nome, pontos, saldo_de_gols, vitorias) values(2,0,0,0,0,'Fluminense',0,0,0);
-insert into equipe (id, derrotas, empates, golsafavor, gols_contra, nome, pontos, saldo_de_gols, vitorias) values(3,0,0,0,0,'Palmeiras',0,0,0);
+insert into equipe (id, derrotas, empates, golsafavor, gols_contra, nome, pontos, saldo_de_gols, vitorias) values(1,0,0,7,4,'Bahia',3,3,1);
+insert into equipe (id, derrotas, empates, golsafavor, gols_contra, nome, pontos, saldo_de_gols, vitorias) values(2,1,0,3,5,'Fluminense',0,-2,0);
+insert into equipe (id, derrotas, empates, golsafavor, gols_contra, nome, pontos, saldo_de_gols, vitorias) values(3,0,0,1,2,'Palmeiras',0,0,0);
 
 insert into campeonato_equipes (campeonato_id, equipes_id) values(1,1);
 insert into campeonato_equipes (campeonato_id, equipes_id) values(1,2);
