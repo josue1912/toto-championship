@@ -32,15 +32,19 @@ insert into jogador (id, nome, email) values (5, 'Ronaldinho Gaucho', 'r10@futeb
 insert into jogador (id, nome, email) values (6, 'Bebeto', 'bebeto@futebol.com.br');
 
 -- ### CADASTRO DE REGRAS
-insert into regra (id, descricao) values(1, 'Roletou? É penalti');
+insert into regra (id, descricao) values(1, 'Se roletar será marcada penalidade');
+insert into regra (id, descricao) values(2, 'O jogo terá 2 tempos com duração de 2 mintuos com troca de lado');
+insert into regra (id, descricao) values(3, 'O campeonato será de pontos corridos.');
+insert into regra (id, descricao) values(4, 'A classificacao é definida por: Pontos, Vitoria, Saldo de gols e Gols a favor');
 
--- ### CADASTRO DE CAMPEONATO
+
+-- ### CADASTRO DE CAMPEONATOS
 insert into campeonato(id, nome, data_realizacao, status) values (1, 'Estadual 2018', '2018-01-01', 'EM_ANDAMENTO');
 insert into campeonato(id, nome, data_realizacao, status) values (2, 'Brasileiro 2018', '2018-01-01', 'EM_CRIACAO');
 
-insert into equipe (id, derrotas, empates, golsafavor, gols_contra, nome, pontos, saldo_de_gols, vitorias) values(1,0,0,7,4,'Bahia',3,3,1);
-insert into equipe (id, derrotas, empates, golsafavor, gols_contra, nome, pontos, saldo_de_gols, vitorias) values(2,1,0,3,5,'Fluminense',0,-2,0);
-insert into equipe (id, derrotas, empates, golsafavor, gols_contra, nome, pontos, saldo_de_gols, vitorias) values(3,0,0,1,2,'Palmeiras',0,0,0);
+insert into equipe (id, derrotas, empates, golsafavor, gols_contra, nome, pontos, saldo_de_gols, vitorias) values(1,0,0,5,3,'Bahia',3,2,1);
+insert into equipe (id, derrotas, empates, golsafavor, gols_contra, nome, pontos, saldo_de_gols, vitorias) values(2,1,0,3,5,'Fluminense',3,-2,2);
+insert into equipe (id, derrotas, empates, golsafavor, gols_contra, nome, pontos, saldo_de_gols, vitorias) values(3,0,0,0,0,'Palmeiras',0,0,0);
 
 insert into campeonato_equipes (campeonato_id, equipes_id) values(1,1);
 insert into campeonato_equipes (campeonato_id, equipes_id) values(1,2);
@@ -53,9 +57,10 @@ insert into equipe_jogadores (equipe_id, jogadores_id) values(2,4);
 insert into equipe_jogadores (equipe_id, jogadores_id) values(3,5);
 insert into equipe_jogadores (equipe_id, jogadores_id) values(3,6);
 
-insert into partida (id, placar_timea, placar_timeb, status, timea_id, timeb_id) values (1,5,3,'ENCERRADA', 1,2);
-insert into partida (id, placar_timea, placar_timeb, status, timea_id, timeb_id) values (2,2,1,'EM_ANDAMENTO', 1,3);
+insert into partida (id, placar_timea, placar_timeb, status, timea_id, timeb_id) values (1,2,1,'EM_ANDAMENTO', 1,2);
+insert into partida (id, placar_timea, placar_timeb, status, timea_id, timeb_id) values (2,5,3,'ENCERRADA', 1,3);
 insert into partida (id, placar_timea, placar_timeb, status, timea_id, timeb_id) values (3,0,0,'NAO_REALIZADA', 2,3);
+
 
 insert into campeonato_partidas (campeonato_id, partidas_id) values (1,1);
 insert into campeonato_partidas (campeonato_id, partidas_id) values (1,2);

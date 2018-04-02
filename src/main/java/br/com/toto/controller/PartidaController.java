@@ -191,7 +191,6 @@ public class PartidaController {
     private void atualizaClassificacao(Partida partida){
         Equipe equipeA = equipeRepository.findById(partida.getTimeA().getId()).get();
         Equipe equipeB = equipeRepository.findById(partida.getTimeB().getId()).get();
-
         if (partida.getPlacarTimeA() == partida.getPlacarTimeB()){
             equipeA.adicionaEmpate(partida.getPlacarTimeA());
             equipeB.adicionaEmpate(partida.getPlacarTimeB());
@@ -202,7 +201,6 @@ public class PartidaController {
             equipeA.adicionaDerrota(partida.getPlacarTimeA(),partida.getPlacarTimeB());
             equipeB.adicionaVitoria(partida.getPlacarTimeB(),partida.getPlacarTimeA());
         }
-
         equipeRepository.save(equipeA);
         equipeRepository.save(equipeB);
     }
