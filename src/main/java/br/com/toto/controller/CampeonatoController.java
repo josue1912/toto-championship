@@ -49,7 +49,7 @@ public class CampeonatoController {
             consumes = MediaType.APPLICATION_JSON_UTF8_VALUE
     )
     public ResponseEntity<?> inscreverJogadorNoCampeonato(@PathVariable("idCampeonato") Integer idCampeonato,
-                                                          @Valid @RequestBody(required = true) Jogador jogador) {
+                                                          @Valid @RequestBody Jogador jogador) {
         Optional<Campeonato> campeonatoOptional = repositorio.findById(idCampeonato);
         Campeonato campeonato;
         if (campeonatoOptional.isPresent()) {
@@ -80,6 +80,48 @@ public class CampeonatoController {
         }
         return new ResponseEntity<>(campeonato, HttpStatus.CREATED);
     }
+
+	@PostMapping(value = "/{idCampeonato}/jogadores")
+	@ApiOperation(
+			value = "Cadastra e/ou inscreve uma lista de jogadores no campeonato",
+			response = Campeonato.class,
+			consumes = MediaType.APPLICATION_JSON_UTF8_VALUE
+	)
+	public ResponseEntity<?> inscreverJogadoresNoCampeonato(@PathVariable("idCampeonato") Integer idCampeonato,
+														  @Valid @RequestBody Set<Jogador> jogadores) {
+		Optional<Campeonato> campeonatoOptional = repositorio.findById(idCampeonato);
+		Campeonato campeonato;
+		if (campeonatoOptional.isPresent()) {
+			campeonato = campeonatoOptional.get();
+			if (campeonato.getStatus().equals(StatusCampeonatoEnum.EM_ANDAMENTO) ||
+					campeonato.getStatus().equals(StatusCampeonatoEnum.ENCERRADO)) {
+				Erro erro = new Erro("O campeonato com id [" + idCampeonato + "] não pode ser alterado pois está com status ["+campeonato.getStatus()+"]");
+				logger.info(erro.getMensagem());
+				return new ResponseEntity<>(erro, HttpStatus.BAD_REQUEST);
+			}else {
+
+                for (Jogador jogador:jogadores){
+                    Optional<Jogador> jogadorOptional = repositorioJogador.findByEmail(jogador.getEmail());
+                    if (jogadorOptional.isPresent()) {
+                        campeonato.getJogadores().add(jogadorOptional.get());
+                        logger.info("O jogador [{}] já existia e foi inscrito no campeonato [{}]", jogador.getNome(),
+                                campeonato.getNome());
+                    } else {
+                        Jogador novoJogador = repositorioJogador.save(jogador);
+                        campeonato.getJogadores().add(novoJogador);
+                        logger.info("O jogador [{}] foi cadastrado e inscrito no campeonato [{}]", jogador.getNome(), campeonato.getNome());
+                    }
+                }
+//				campeonato.setStatus(StatusCampeonatoEnum.EM_CRIACAO);
+				repositorio.save(campeonato);
+			}
+		} else {
+			Erro erro = new Erro("Campeonato com id [" + idCampeonato + "] não encontrado");
+			logger.info(erro.getMensagem());
+			return new ResponseEntity<>(erro, HttpStatus.NOT_FOUND);
+		}
+		return new ResponseEntity<>(campeonato, HttpStatus.CREATED);
+	}
 
 	@PostMapping
 	@ApiOperation(

@@ -1,14 +1,8 @@
 package br.com.toto.model;
 
-import java.util.Comparator;
+import javax.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
 
 @Entity
 public class Equipe implements Comparable{

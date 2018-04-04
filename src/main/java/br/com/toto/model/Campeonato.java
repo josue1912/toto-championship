@@ -3,6 +3,7 @@ package br.com.toto.model;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -54,7 +55,7 @@ public class Campeonato {
 	public Campeonato(String nome, Calendar dataRealizacao) {
 		this.nome = nome;
 		this.dataRealizacao = dataRealizacao;
-		this.equipes = new HashSet<>();
+		this.equipes = new TreeSet<>();
 		this.status = StatusCampeonatoEnum.EM_CRIACAO;
 	}
 
